@@ -156,12 +156,12 @@ public class CallFeaturesSetting extends PreferenceActivity
     private static final String BUTTON_HAC_KEY    = "button_hac_key";
     private static final String BUTTON_NOISE_SUPPRESSION_KEY = "button_noise_suppression_key";
 
-    private static final String BUTTON_EXIT_TO_HOMESCREEN_KEY = "button_exit_to_home_screen_key";
-
     private static final String BUTTON_GSM_UMTS_OPTIONS = "button_gsm_more_expand_key";
     private static final String BUTTON_CDMA_OPTIONS = "button_cdma_more_expand_key";
 
     private static final String VM_NUMBERS_SHARED_PREFERENCES_NAME = "vm_numbers";
+
+    private static final String BUTTON_EXIT_TO_HOMESCREEN_KEY = "button_exit_to_home_screen_key";
 
     private static final String BUTTON_SIP_CALL_OPTIONS =
             "sip_call_options_key";
@@ -169,6 +169,8 @@ public class CallFeaturesSetting extends PreferenceActivity
             "sip_call_options_wifi_only_key";
     private static final String SIP_SETTINGS_CATEGORY_KEY =
             "sip_settings_category_key";
+
+    private static final String FLIP_ACTION_KEY = "flip_action";
 
     private Intent mContactListIntent;
 
@@ -235,6 +237,7 @@ public class CallFeaturesSetting extends PreferenceActivity
     private SipSharedPreferences mSipSharedPreferences;
 
     private CheckBoxPreference mButtonExitToHomeScreen;
+    private ListPreference mFlipAction;
 
     private class VoiceMailProvider {
         public VoiceMailProvider(String name, Intent intent) {
@@ -534,12 +537,21 @@ public class CallFeaturesSetting extends PreferenceActivity
                     mVoicemailNotificationVibrateWhen.getEntry());
         } else if (preference == mButtonSipCallOptions) {
             handleSipCallOptionsChange(objValue);
+        } else if (preference == mFlipAction) {
+            updateFlipActionSummary((String) objValue);
         }
         // always let the preference setting proceed.
         return true;
     }
 
-    // Preference click listener invoked on OnDialogClosed for EditPhoneNumberPreference.
+    private void updateFlipActionSummary(String action) {
+        int i = Integer.parseInt(action);
+        if (mFlipAction != null) {
+            String[] summaries = getResources().getStringArray(R.array.flip_action_summary_entries);
+            mFlipAction.setSummary(getString(R.string.flip_action_summary, summaries[i]));
+        }
+    }
+
     public void onDialogClosed(EditPhoneNumberPreference preference, int buttonClicked) {
         if (DBG) log("onPreferenceClick: request preference click on dialog close: " +
                 buttonClicked);
@@ -1433,6 +1445,7 @@ public class CallFeaturesSetting extends PreferenceActivity
         mButtonTTY = (ListPreference) findPreference(BUTTON_TTY_KEY);
         mButtonNoiseSuppression = (CheckBoxPreference) findPreference(BUTTON_NOISE_SUPPRESSION_KEY);
         mVoicemailProviders = (ListPreference) findPreference(BUTTON_VOICEMAIL_PROVIDER_KEY);
+        mFlipAction = (ListPreference) findPreference(FLIP_ACTION_KEY);
         if (mVoicemailProviders != null) {
             mVoicemailProviders.setOnPreferenceChangeListener(this);
             mVoicemailSettings = (PreferenceScreen)findPreference(BUTTON_VOICEMAIL_SETTING_KEY);
@@ -1488,6 +1501,10 @@ public class CallFeaturesSetting extends PreferenceActivity
                 prefSet.removePreference(mButtonNoiseSuppression);
                 mButtonNoiseSuppression = null;
             }
+        }
+
+        if (mFlipAction != null) {
+            mFlipAction.setOnPreferenceChangeListener(this);
         }
 
         if (!getResources().getBoolean(R.bool.world_phone)) {
@@ -1621,6 +1638,10 @@ public class CallFeaturesSetting extends PreferenceActivity
                     Phone.TTY_MODE_OFF);
             mButtonTTY.setValue(Integer.toString(settingsTtyMode));
             updatePreferredTtyModeSummary(settingsTtyMode);
+        }
+
+        if (mFlipAction != null) {
+            updateFlipActionSummary(mFlipAction.getValue());
         }
 
         if (mButtonNoiseSuppression != null) {

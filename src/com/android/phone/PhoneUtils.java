@@ -398,6 +398,11 @@ public class PhoneUtils {
             return PreferenceManager.getDefaultSharedPreferences(context)
                        .getBoolean("button_vibrate_outgoing", true);
         }
+        static int flipAction(Context context) {
+            String s = PreferenceManager.getDefaultSharedPreferences(context)
+					.getString("flip_action", "1");
+            return Integer.parseInt(s);
+        }
         static boolean vibCallWaiting(Context context) {
             return PreferenceManager.getDefaultSharedPreferences(context)
                        .getBoolean("button_vibrate_call_waiting", false);
