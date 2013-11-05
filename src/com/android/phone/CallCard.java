@@ -45,6 +45,7 @@ import com.android.internal.telephony.CallerInfoAsyncQuery;
 import com.android.internal.telephony.Connection;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.CallManager;
+import com.android.phone.location.PhoneLocation;
 
 import java.util.List;
 
@@ -1057,7 +1058,8 @@ public class CallCard extends FrameLayout
                         // TODO (CallerInfoAsyncQuery cleanup): Fix the CallerInfo
                         // query to only do the geoDescription lookup in the first
                         // place for incoming calls.
-                        displayNumber = info.geoDescription;  // may be null
+                        //displayNumber = info.geoDescription;  // may be null
+                        displayNumber = PhoneLocation.getCityFromPhone(number.replaceAll(" ", ""));
                     }
 
                     if (DBG) log("  ==>  no name; falling back to number: displayName '"
@@ -1116,15 +1118,18 @@ public class CallCard extends FrameLayout
                 info, 0, this, call, getContext(), mPhoto, personUri, R.drawable.picture_unknown);
         }
 
+            String location = null;
         if (displayNumber != null && !call.isGeneric()) {
+            location = PhoneLocation.getCityFromPhone(displayNumber.replaceAll(" ", ""));
             mPhoneNumber.setText(displayNumber);
             mPhoneNumber.setVisibility(View.VISIBLE);
         } else {
+            location = PhoneLocation.getCityFromPhone(displayName.replaceAll(" ", ""));
             mPhoneNumber.setVisibility(View.GONE);
         }
 
-        if (label != null && !call.isGeneric()) {
-            mLabel.setText(label);
+        if (location != null && !call.isGeneric()) {
+            mLabel.setText(location);
             mLabel.setVisibility(View.VISIBLE);
         } else {
             mLabel.setVisibility(View.GONE);
