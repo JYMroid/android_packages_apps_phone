@@ -1683,4 +1683,7 @@
     <string name="noise_suppression_summary">Enable noise suppression for calls</string>
     <!-- End Noise suppression -->
 
+    <!-- Exit to home screen setting -->
+    <string name="exit_to_home_screen_title">Exit to home screen</string>
+    <string name="exit_to_home_screen_summary">Exit to home screen when call ends instead of call log</string>
 </resources>

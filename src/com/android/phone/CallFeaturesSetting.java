@@ -156,6 +156,8 @@ public class CallFeaturesSetting extends PreferenceActivity
     private static final String BUTTON_HAC_KEY    = "button_hac_key";
     private static final String BUTTON_NOISE_SUPPRESSION_KEY = "button_noise_suppression_key";
 
+    private static final String BUTTON_EXIT_TO_HOMESCREEN_KEY = "button_exit_to_home_screen_key";
+
     private static final String BUTTON_GSM_UMTS_OPTIONS = "button_gsm_more_expand_key";
     private static final String BUTTON_CDMA_OPTIONS = "button_cdma_more_expand_key";
 
@@ -231,6 +233,8 @@ public class CallFeaturesSetting extends PreferenceActivity
     private PreferenceScreen mVoicemailSettings;
     private ListPreference mVoicemailNotificationVibrateWhen;
     private SipSharedPreferences mSipSharedPreferences;
+
+    private CheckBoxPreference mButtonExitToHomeScreen;
 
     private class VoiceMailProvider {
         public VoiceMailProvider(String name, Intent intent) {
@@ -1420,6 +1424,8 @@ public class CallFeaturesSetting extends PreferenceActivity
                 mMwiNotification = null;
             }
         }
+
+        mButtonExitToHomeScreen = (CheckBoxPreference) findPreference(BUTTON_EXIT_TO_HOMESCREEN_KEY);
 
         mButtonDTMF = (ListPreference) findPreference(BUTTON_DTMF_KEY);
         mButtonAutoRetry = (CheckBoxPreference) findPreference(BUTTON_RETRY_KEY);

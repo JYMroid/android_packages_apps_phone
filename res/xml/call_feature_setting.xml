@@ -112,6 +112,11 @@
         android:title="@string/vibrate_call_waiting"
         android:persistent="true"
         android:summary="@string/vibrate_call_waiting_sum"/>
+     <CheckBoxPreference
+        android:key="button_exit_to_home_screen_key"
+        android:title="@string/exit_to_home_screen_title"
+        android:persistent="true"
+        android:summary="@string/exit_to_home_screen_summary"/>
   </PreferenceCategory>
 
   <PreferenceCategory android:key="button_misc_category_key"

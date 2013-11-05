@@ -33,6 +33,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.os.AsyncResult;
@@ -42,6 +43,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.preference.PreferenceManager;
 import android.telephony.ServiceState;
 import android.text.TextUtils;
 import android.text.method.DialerKeyListener;
@@ -159,6 +161,8 @@ public class InCallScreen extends Activity
     private static final int PHONE_INCOMING_RING = 123;
     private static final int PHONE_NEW_RINGING_CONNECTION = 124;
 
+    private static final String BUTTON_EXIT_TO_HOMESCREEN_KEY = "button_exit_to_home_screen_key";
+
     // When InCallScreenMode is UNDEFINED set the default action
     // to ACTION_UNDEFINED so if we are resumed the activity will
     // know its undefined. In particular checkIsOtaCall will return
@@ -262,6 +266,7 @@ public class InCallScreen extends Activity
         EARPIECE,   // Handset earpiece (or wired headset, if connected)
     }
 
+    public boolean mExitToHomeScreen = false;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -470,6 +475,8 @@ public class InCallScreen extends Activity
             return;
         }
 
+        updateSettings();
+
         mApp = PhoneApp.getInstance();
         mApp.setInCallScreenInstance(this);
 
@@ -563,6 +570,8 @@ public class InCallScreen extends Activity
     protected void onResume() {
         if (DBG) log("onResume()...");
         super.onResume();
+
+        updateSettings();
 
         mIsForegroundActivity = true;
         mIsForegroundActivityForProximity = true;
@@ -1285,14 +1294,25 @@ public class InCallScreen extends Activity
         // current activity.)
 
         if (mCM.hasActiveRingingCall()) {
-            // The Back key, just like the Home key, is always disabled
-            // while an incoming call is ringing.  (The user *must* either
-            // answer or reject the call before leaving the incoming-call
-            // screen.)
-            if (DBG) log("BACK key while ringing: ignored");
+            // While an incoming call is ringing, BACK behaves just like
+            // ENDCALL: it stops the ringing and rejects the current call.
+            // (This is only enabled on some platforms, though.)
+            if (getResources().getBoolean(R.bool.allow_back_key_to_reject_incoming_call)) {
+                if (DBG) log("BACK key while ringing: reject the call");
+                hangupRingingCall();
 
-            // And consume this event; *don't* call super.onBackPressed().
-            return;
+                // Don't consume the key; instead let the BACK event *also*
+                // get handled normally by the framework (which presumably
+                // will cause us to exit out of this activity.)
+                super.onBackPressed();
+                return;
+            } else {
+                // The BACK key is disabled; don't reject the call, but
+                // *do* consume the keypress (otherwise we'll exit out of
+                // this activity.)
+                if (DBG) log("BACK key while ringing: ignored");
+                return;
+            }
         }
 
         // BACK is also used to exit out of any "special modes" of the
@@ -2506,9 +2526,10 @@ public class InCallScreen extends Activity
                         log("- Show Call Log (or Dialtacts) after disconnect. Current intent: "
                                 + intent);
                     }
-                    try {
-                        startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
+                    if (!mExitToHomeScreen)  // If User wants to exit to home screen, skip this part - else go to call log.
+                        try {
+                            startActivity(intent);
+                        } catch (ActivityNotFoundException e) {
                         // Don't crash if there's somehow no "Call log" at
                         // all on this device.
                         // (This should never happen, though, since we already
@@ -4491,5 +4512,10 @@ public class InCallScreen extends Activity
 
     private void log(String msg) {
         Log.d(LOG_TAG, msg);
+    }
+
+    protected void updateSettings() {
+        SharedPreferences callsettings = PreferenceManager.getDefaultSharedPreferences(this);
+        mExitToHomeScreen = callsettings.getBoolean(BUTTON_EXIT_TO_HOMESCREEN_KEY, false);
     }
 }
